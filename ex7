@@ -1,0 +1,175 @@
+#include<iostream>
+#include<string>
+
+using namespace std;
+
+enum TipMagazin { ALIMENTAR = 1, IMBRACAMINTE = 2, ELECTRONICE = 3 };
+
+class Magazin {
+private:
+	const int codUnic;
+	string nume;
+	float cifraAfaceri;
+	TipMagazin tip;
+	int nrLuni;
+	float* vanzariLunare;
+	static int nrTotalMagazine;
+
+public:
+	Magazin() :codUnic(++nrTotalMagazine) {
+		this->nume = "Magazin Default";
+		this->cifraAfaceri = 0;
+		this->nrLuni = 0;
+		this->vanzariLunare = nullptr;
+		this->tip = ALIMENTAR;
+	}
+
+	Magazin(string nume, float cifraAfaceri, int nrLuni, float* vanzariSursa, TipMagazin tip)
+		:codUnic(++nrTotalMagazine)
+	{
+		this->nume = nume;
+		this->cifraAfaceri = cifraAfaceri;
+		this->nrLuni = nrLuni;
+		this->vanzariLunare = new float[this->nrLuni];
+		for (int i = 0; i < this->nrLuni; i++) {
+			this->vanzariLunare[i] = vanzariSursa[i];
+		}
+		this->tip = tip;
+		delete[] vanzariSursa;
+	}
+
+	Magazin(const Magazin& copie) :codUnic(++nrTotalMagazine) {
+		this->nume = copie.nume;
+		this->cifraAfaceri = copie.cifraAfaceri;
+		this->tip = copie.tip;
+		this->nrLuni = copie.nrLuni;
+
+		if (copie.vanzariLunare != nullptr) {
+			this->vanzariLunare = new float[copie.nrLuni];
+			for (int i = 0; i < copie.nrLuni; i++) {
+				this->vanzariLunare[i] = copie.vanzariLunare[i];
+			}
+		}
+		else {
+			this->vanzariLunare = nullptr;
+		}
+	}
+
+	void operator=(const Magazin& copie) {
+		this->nume = copie.nume;
+		this->cifraAfaceri = copie.cifraAfaceri;
+		this->tip = copie.tip;
+		this->nrLuni = copie.nrLuni;
+
+		if (this->vanzariLunare != nullptr) {
+			delete[] this->vanzariLunare;
+			this->vanzariLunare = nullptr;
+		}
+
+		if (copie.vanzariLunare != nullptr) {
+			this->vanzariLunare = new float[copie.nrLuni];
+			for (int i = 0; i < copie.nrLuni; i++) {
+				this->vanzariLunare[i] = copie.vanzariLunare[i];
+			}
+		}
+		else {
+			this->vanzariLunare = nullptr;
+		}
+	}
+
+	void operator+=(float sumaAdaugata) {
+		this->cifraAfaceri += sumaAdaugata;
+	}
+
+	bool operator>(const Magazin& magazin) {
+		return this->cifraAfaceri > magazin.cifraAfaceri;
+	}
+
+	void afisareMagazin() {
+		cout << endl << this->codUnic << ". Magazinul " << this->nume
+			<< " de tip ";
+		if (this->tip == ALIMENTAR) cout << "ALIMENTAR";
+		if (this->tip == IMBRACAMINTE) cout << "IMBRACAMINTE";
+		if (this->tip == ELECTRONICE) cout << "ELECTRONICE";
+
+		cout << " are Cifra de Afaceri anuala de " << this->cifraAfaceri
+			<< " lei si are date de vanzari pe " << this->nrLuni << " luni: ";
+
+		if (this->vanzariLunare != nullptr) {
+			for (int i = 0; i < this->nrLuni - 1; i++) {
+				cout << this->vanzariLunare[i] << " lei, ";
+			}
+			cout << this->vanzariLunare[this->nrLuni - 1] << " lei.";
+		}
+	}
+
+	int getNrLuni() {
+		return this->nrLuni;
+	}
+
+	void setNrLuni(int nrLuniNou) {
+		if (nrLuniNou > 0)
+		{
+			this->nrLuni = nrLuniNou;
+		}
+		else {
+			throw "Numar negativ sau zero";
+		}
+	}
+
+	float* getVanzariLunare() {
+		float* copieVanzari = new float[this->nrLuni];
+		for (int i = 0; i < this->nrLuni; i++) {
+			copieVanzari[i] = this->vanzariLunare[i];
+		}
+		return copieVanzari;
+	}
+
+	void setVanzariLunare(float* vanzariNoi, int nrLuniNou) {
+		setNrLuni(nrLuniNou);
+
+		if (this->vanzariLunare != nullptr) {
+			delete[] this->vanzariLunare;
+		}
+
+		this->vanzariLunare = new float[this->nrLuni];
+		for (int i = 0; i < this->nrLuni; i++) {
+			this->vanzariLunare[i] = vanzariNoi[i];
+		}
+
+		delete[] vanzariNoi;
+	}
+
+	~Magazin() {
+		if (this->vanzariLunare != nullptr) {
+			delete[] this->vanzariLunare;
+		}
+	}
+};
+
+int Magazin::nrTotalMagazine = 0;
+
+void main() {
+	float* vanzari1 = new float[3] {15000.0, 12500.5, 18000.0};
+
+	Magazin magazin1;
+	Magazin* magazin2 = new Magazin("Magazin Central", 50500.5, 3, vanzari1, ELECTRONICE);
+
+	Magazin magazinCopie(*magazin2);
+	magazinCopie.afisareMagazin();
+
+	magazin1 = *magazin2;
+	magazin1.afisareMagazin();
+
+	magazin1 += 5000;
+	magazin1.afisareMagazin(); 
+
+	if (magazinCopie > magazin1) {
+		cout << endl << " Magazin Copie are CA mai mare!";
+	}
+	else {
+		cout << endl << " Magazin 1 (actualizat) are CA mai mare sau egala!";
+	}
+
+	delete magazin2;
+}
