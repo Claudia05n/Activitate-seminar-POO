@@ -1,0 +1,118 @@
+#include<iostream>
+#include<string>
+
+using namespace std;
+enum Specializare { INFORMATICA = 1, AUTOMATICA = 2, CIBERNETICA = 3 };
+
+class Student {
+private:
+	const int matricol;
+	string nume;
+	float medie;
+	Specializare spec;
+	int nrNote;
+	float* note;
+	static int nrTotalStudenti;
+
+public:
+	Student() :matricol(++nrTotalStudenti) {
+		this->nume = "Anonim"; this->medie = 0; this->nrNote = 0; this->note = nullptr; this->spec = INFORMATICA;
+	}
+	Student(string nume, float medie, int nrNote, float* noteSursa, Specializare spec) :matricol(++nrTotalStudenti) {
+		this->nume = nume; this->medie = medie; this->nrNote = nrNote;
+		this->note = new float[this->nrNote];
+		for (int i = 0; i < this->nrNote; i++) { this->note[i] = noteSursa[i]; }
+		this->spec = spec;
+		delete[] noteSursa;
+	}
+
+	Student(const Student& copie) :matricol(++nrTotalStudenti) {
+		this->nume = copie.nume; this->medie = copie.medie; this->spec = copie.spec; this->nrNote = copie.nrNote;
+		if (copie.note != nullptr) {
+			this->note = new float[copie.nrNote];
+			for (int i = 0; i < copie.nrNote; i++) { this->note[i] = copie.note[i]; }
+		}
+		else { this->note = nullptr; }
+	}
+
+	void operator=(const Student& copie) {
+		this->nume = copie.nume; this->medie = copie.medie; this->spec = copie.spec; this->nrNote = copie.nrNote;
+
+		if (this->note != nullptr) { delete[] this->note; this->note = nullptr; }
+
+		if (copie.note != nullptr) {
+			this->note = new float[copie.nrNote];
+			for (int i = 0; i < copie.nrNote; i++) { this->note[i] = copie.note[i]; }
+		}
+		else { this->note = nullptr; }
+	}
+
+	void operator+=(float valoareAdaugata) {
+		this->medie += valoareAdaugata;
+	}
+
+	bool operator>(const Student& student) {
+		return this->medie > student.medie;
+	}
+
+	void afisareStudent() {
+		cout << endl << this->matricol << ". Studentul " << this->nume
+			<< " la spec. ";
+		if (this->spec == INFORMATICA) cout << "INFO";
+		if (this->spec == AUTOMATICA) cout << "AUTO";
+		if (this->spec == CIBERNETICA) cout << "CIBER";
+
+		cout << " are media " << this->medie << " si " << this->nrNote << " note: ";
+		if (this->note != nullptr) {
+			for (int i = 0; i < this->nrNote - 1; i++) {
+				cout << this->note[i] << ", ";
+			}
+			cout << this->note[this->nrNote - 1] << ".";
+		}
+	}
+
+	int getNrNote() { return this->nrNote; }
+	void setNrNote(int nrNoteNou) { if (nrNoteNou > 0) { this->nrNote = nrNoteNou; } else { throw "Numar de note invalid"; } }
+
+	float* getNote() {
+		float* copieNote = new float[this->nrNote];
+		for (int i = 0; i < this->nrNote; i++) { copieNote[i] = this->note[i]; }
+		return copieNote;
+	}
+
+	void setNote(float* noteNoi, int nrNoteNou) {
+		setNrNote(nrNoteNou);
+		if (this->note != nullptr) { delete[] this->note; }
+		this->note = new float[this->nrNote];
+		for (int i = 0; i < this->nrNote; i++) { this->note[i] = noteNoi[i]; }
+		delete[] noteNoi;
+	}
+
+	~Student() {
+		if (this->note != nullptr) { delete[] this->note; }
+	}
+};
+
+int Student::nrTotalStudenti = 0;
+
+void main() {
+	float* note1 = new float[2] {9, 10};
+	Student s1;
+	Student s2("Georgescu", 9.5, 2, note1, INFORMATICA);
+
+	Student sCopie(s2);
+	sCopie.afisareStudent();
+
+	s1 = s2;
+	s1.afisareStudent();
+
+	s1 += 0.5;
+	s1.afisareStudent(); 
+
+	if (s2 > s1) {
+		cout << endl << " S2 are media mai mare!";
+	}
+	else {
+		cout << endl << " S1 are media mai mare sau egala!";
+	}
+}
