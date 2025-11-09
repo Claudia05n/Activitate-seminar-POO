@@ -1,0 +1,62 @@
+#include<iostream>
+#include<string>
+
+using namespace std;
+
+class Student {
+private:
+	const int matricol;
+	string nume;
+	float medie;
+	int nrNote;
+	float* note;
+	static int nrTotalStudenti;
+public:
+	Student() :matricol(++nrTotalStudenti) {
+		this->nume = "Anonim";
+		this->medie = 0;
+		this->nrNote = 0;
+		this->note = nullptr;
+	}
+
+	Student(string nume, float medie, int nrNote, float* noteSursa) :matricol(++nrTotalStudenti) {
+		this->nume = nume;
+		this->medie = medie;
+		this->nrNote = nrNote;
+		this->note = new float[this->nrNote];
+		for (int i = 0; i < this->nrNote; i++) {
+			this->note[i] = noteSursa[i];
+		}
+		delete[] noteSursa;
+	}
+
+	void afisareStudent() {
+		cout << endl << this->matricol << ". Studentul " << this->nume
+			<< " are media " << this->medie << " si " << this->nrNote << " note: ";
+		if (this->note != nullptr) {
+			for (int i = 0; i < this->nrNote - 1; i++) {
+				cout << this->note[i] << ", ";
+			}
+			cout << this->note[this->nrNote - 1] << ".";
+		}
+	}
+
+	~Student() {
+		if (this->note != nullptr) {
+			delete[] this->note;
+		}
+	}
+};
+
+int Student::nrTotalStudenti = 0;
+
+void main() {
+	Student s1;
+	float* note = new float[2] {9.5, 10};
+	Student* s2 = new Student("Popescu", 9.75, 2, note);
+
+	s1.afisareStudent();
+	s2->afisareStudent();
+
+	delete s2;
+}
