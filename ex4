@@ -1,0 +1,134 @@
+#include<iostream>
+#include<string>
+
+using namespace std;
+
+enum Stare { NOUA = 1, RULATA = 2, AVARIATA = 3 };
+
+class Masina {
+private:
+	const int codSasiu;
+	float pretAchizitie;
+	string marcaModel;
+	Stare stare;
+	int nrRevizii;
+	float* costuriRevizii;
+	static int nrTotalMasini;
+
+public:
+	Masina() :codSasiu(++nrTotalMasini) {
+		this->marcaModel = "Model Necunoscut";
+		this->pretAchizitie = 0;
+		this->nrRevizii = 0;
+		this->costuriRevizii = nullptr;
+		this->stare = RULATA;
+	}
+
+	Masina(string marcaModel, float pretAchizitie, int nrRevizii, float* costuriReviziiSursa, Stare stare) :codSasiu(++nrTotalMasini) {
+		this->marcaModel = marcaModel;
+		this->pretAchizitie = pretAchizitie;
+		this->nrRevizii = nrRevizii;
+		this->costuriRevizii = new float[this->nrRevizii];
+		for (int i = 0; i < this->nrRevizii; i++) {
+			this->costuriRevizii[i] = costuriReviziiSursa[i];
+		}
+		this->stare = stare;
+
+		delete[] costuriReviziiSursa;
+	}
+
+	void afisareMasina() {
+		cout << endl << this->codSasiu << ". Masina cu modelul " << this->marcaModel
+			<< " (Stare: ";
+		if (this->stare == NOUA) cout << "NOUA";
+		if (this->stare == RULATA) cout << "RULATA";
+		if (this->stare == AVARIATA) cout << "AVARIATA";
+
+		cout << ") achizitionata cu pretul de " << this->pretAchizitie
+			<< " lei. A avut " << this->nrRevizii << " revizii cu costurile: ";
+
+		if (this->costuriRevizii != nullptr) {
+			for (int i = 0; i < this->nrRevizii - 1; i++) {
+				cout << this->costuriRevizii[i] << " lei, ";
+			}
+			cout << this->costuriRevizii[this->nrRevizii - 1] << " lei.";
+		}
+	}
+
+	int getNrRevizii() {
+		return this->nrRevizii;
+	}
+
+	void setNrRevizii(int nrReviziiNou) {
+		if (nrReviziiNou > 0)
+		{
+			this->nrRevizii = nrReviziiNou;
+		}
+		else {
+			throw "Numar negativ";
+		}
+	}
+
+	float* getCosturiRevizii() {
+		float* copieCosturi = new float[this->nrRevizii];
+		for (int i = 0; i < this->nrRevizii; i++) {
+			copieCosturi[i] = this->costuriRevizii[i];
+		}
+		return copieCosturi;
+	}
+
+	void setCosturiRevizii(float* costuriNoi, int nrReviziiNou) {
+		setNrRevizii(nrReviziiNou);
+
+		if (this->costuriRevizii != nullptr) {
+			delete[] this->costuriRevizii;
+		}
+
+		this->costuriRevizii = new float[this->nrRevizii];
+		for (int i = 0; i < this->nrRevizii; i++) {
+			this->costuriRevizii[i] = costuriNoi[i];
+		}
+
+		delete[] costuriNoi;
+	}
+
+	~Masina() {
+		if (this->costuriRevizii != nullptr) {
+			delete[] this->costuriRevizii;
+		}
+	}
+};
+
+int Masina::nrTotalMasini = 0;
+
+void main() {
+	float* costuri1 = new float[3] {500, 1500, 800};
+
+	Masina dacia;
+	Masina* bmw = new Masina("BMW M3", 50000, 3, costuri1, NOUA);
+
+	dacia.afisareMasina();
+	bmw->afisareMasina();
+
+	try {
+		bmw->setNrRevizii(-1);
+	}
+	catch (const char* mesaj) {
+		cout << endl << "Eroare: " << mesaj;
+	}
+	catch (...) {
+		cout << endl << "A aparut o eroare necunoscuta!";
+	}
+
+	float* costuri2 = new float[4] {2000, 1500, 1000, 3000};
+	bmw->setCosturiRevizii(costuri2, 4);
+
+	float* costuriActuale = bmw->getCosturiRevizii();
+	cout << endl << "Masina actualizata are " << bmw->getNrRevizii() << " revizii:";
+	for (int i = 0; i < bmw->getNrRevizii(); i++) {
+		cout << endl << "Cost Revizie " << i + 1 << ": " << costuriActuale[i];
+	}
+
+	delete[] costuriActuale;
+	delete bmw;
+}
